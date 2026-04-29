@@ -513,7 +513,7 @@ body::before {
 
   <!-- API URL 設定提示 -->
   <div class="url-banner" id="urlBanner" style="display:none">
-    ⚠️ <span>尚未設定 GAS API 網址，請修改程式碼中的 <code>API_URL</code> 變數</span>
+    ⚠️ <span>尚未設定 GAS API 網址，請修改程式碼中的 <code>https://script.google.com/macros/s/AKfycbxPlR35xGECq045weQwsu0cH_G1G-kuySbxKaG9nvDryDONy-7U_eTU3xzmZMAMXhwj/exec</code> 變數</span>
   </div>
 
   <!-- ── Filters ── -->
@@ -708,7 +708,7 @@ body::before {
 // ⚙️ 設定區 - 請修改以下 URL
 // ══════════════════════════════════════════════════════════════
 
-const API_URL = 'YOUR_GAS_WEB_APP_URL_HERE';
+const API_URL = 'https://script.google.com/macros/s/AKfycbxPlR35xGECq045weQwsu0cH_G1G-kuySbxKaG9nvDryDONy-7U_eTU3xzmZMAMXhwj/exec';
 // ↑ 將 YOUR_GAS_WEB_APP_URL_HERE 替換為你的 GAS Web App URL
 // 例如: https://script.google.com/macros/s/AKfycb.../exec
 
