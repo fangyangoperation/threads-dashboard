@@ -8,12 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Sora:wght@300;600;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
-:root {
-  --bg:#0d0f14;--bg2:#151820;--bg3:#1c1f2a;--border:#252835;
-  --accent:#7c6fff;--accent2:#a78bfa;--green:#34d399;--amber:#fbbf24;
-  --red:#f87171;--blue:#60a5fa;--text:#e8eaf0;--muted:#6b7280;
-  --card-r:14px;--font-jp:'Noto Sans TC',sans-serif;--font-en:'Sora',sans-serif;
-}
+:root{--bg:#0d0f14;--bg2:#151820;--bg3:#1c1f2a;--border:#252835;--accent:#7c6fff;--accent2:#a78bfa;--green:#34d399;--amber:#fbbf24;--red:#f87171;--blue:#60a5fa;--text:#e8eaf0;--muted:#6b7280;--card-r:14px;--font-jp:'Noto Sans TC',sans-serif;--font-en:'Sora',sans-serif;}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{font-size:16px;scroll-behavior:smooth}
 body{background:var(--bg);color:var(--text);font-family:var(--font-jp);min-height:100vh;line-height:1.6;overflow-x:hidden}
@@ -107,6 +102,15 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .page-btn.active{background:var(--accent);border-color:var(--accent);color:#fff}
 .page-btn:disabled{opacity:.3;cursor:not-allowed}
 .page-info{font-size:.8rem;color:var(--muted);padding:0 6px}
+/* ── 問題反映 ── */
+.feedback-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--card-r);padding:20px;margin-top:24px}
+.feedback-card h3{font-size:.9rem;font-weight:600;display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.feedback-desc{font-size:.78rem;color:var(--muted);margin-bottom:14px}
+.feedback-textarea{width:100%;background:var(--bg3);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:12px 14px;font-size:.88rem;font-family:var(--font-jp);resize:vertical;min-height:90px;transition:border-color .2s,box-shadow .2s;line-height:1.7}
+.feedback-textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(124,111,255,.12)}
+.feedback-textarea::placeholder{color:var(--muted)}
+.feedback-footer{display:flex;align-items:center;justify-content:space-between;margin-top:10px}
+/* ── Modal ── */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .2s}
 .modal-overlay.open{opacity:1;pointer-events:all}
 .modal{background:var(--bg2);border:1px solid var(--border);border-radius:16px;width:100%;max-width:600px;max-height:90vh;overflow-y:auto;transform:translateY(16px);transition:transform .2s}
@@ -132,11 +136,13 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .form-textarea{resize:vertical;min-height:100px}
 .form-footer{display:flex;justify-content:flex-end;gap:10px;padding-top:4px}
 .char-count{font-size:.72rem;color:var(--muted);text-align:right;margin-top:4px}
+/* ── Loading ── */
 .loading-overlay{position:fixed;inset:0;background:rgba(13,15,20,.85);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:2000;gap:16px;opacity:0;pointer-events:none;transition:opacity .3s}
 .loading-overlay.show{opacity:1;pointer-events:all}
 .spinner{width:42px;height:42px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .loading-text{font-size:.88rem;color:var(--muted)}
+/* ── Toast ── */
 .toast-container{position:fixed;bottom:24px;right:24px;z-index:3000;display:flex;flex-direction:column-reverse;gap:8px}
 .toast{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:.85rem;color:var(--text);display:flex;align-items:center;gap:10px;box-shadow:0 8px 24px rgba(0,0,0,.4);min-width:240px;max-width:360px;animation:slideIn .25s ease;pointer-events:none}
 .toast.success{border-color:rgba(52,211,153,.4)}
@@ -163,24 +169,14 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 </head>
 <body>
 <div id="app">
-<div class="loading-overlay" id="loadingOverlay">
-  <div class="spinner"></div>
-  <span class="loading-text" id="loadingText">載入資料中…</span>
-</div>
+<div class="loading-overlay" id="loadingOverlay"><div class="spinner"></div><span class="loading-text" id="loadingText">載入資料中…</span></div>
 <div class="toast-container" id="toastContainer"></div>
 
 <header class="header">
   <div class="header-inner">
-    <div class="logo">
-      <div class="logo-icon">🧵</div>
-      Threads 監控儀表板
-      <span class="version-badge">v10</span>
-    </div>
+    <div class="logo"><div class="logo-icon">🧵</div>Threads 監控儀表板<span class="version-badge">v10</span></div>
     <div class="header-actions">
-      <div class="header-meta">
-        <span id="lastUpdateTime">–</span>
-        <span id="filterBadge"></span>
-      </div>
+      <div class="header-meta"><span id="lastUpdateTime">–</span><span id="filterBadge"></span></div>
       <button class="btn btn-secondary btn-sm" onclick="refreshData()">🔄 更新資料</button>
       <button class="btn btn-primary btn-sm" onclick="openPostModal()">➕ 發布貼文</button>
     </div>
@@ -188,6 +184,8 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 </header>
 
 <main class="main">
+
+  <!-- 篩選列 -->
   <div class="filter-bar">
     <select id="filterAccount" onchange="applyFilters()"><option value="">📋 所有帳號</option></select>
     <select id="filterTopic"   onchange="applyFilters()"><option value="">🏷️ 所有主題</option></select>
@@ -203,6 +201,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
     <button class="btn btn-secondary btn-sm" onclick="clearFilters()">✕ 清除</button>
   </div>
 
+  <!-- 統計卡片 -->
   <div class="stats-grid">
     <div class="stat-card purple"><div class="stat-icon">📝</div><div class="stat-label">總貼文數</div><div class="stat-value" id="statPosts">–</div><div class="stat-sub" id="statPostsSub">已收集貼文</div></div>
     <div class="stat-card green"> <div class="stat-icon">👁️</div><div class="stat-label">總瀏覽數</div><div class="stat-value" id="statViews">–</div><div class="stat-sub" id="statViewsSub">累計觸及</div></div>
@@ -210,11 +209,13 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
     <div class="stat-card amber"> <div class="stat-icon">❤️</div><div class="stat-label">平均愛心 / 篇</div><div class="stat-value" id="statAvgLikes">–</div><div class="stat-sub" id="statLikesSub">互動指標</div></div>
   </div>
 
+  <!-- 圖表 -->
   <div class="charts-row">
     <div class="chart-card"><h3><span class="dot" style="background:var(--accent)"></span>發文趨勢（近 30 天）</h3><canvas id="trendChart"></canvas></div>
     <div class="chart-card"><h3><span class="dot" style="background:var(--green)"></span>主題分布</h3><canvas id="topicChart"></canvas></div>
   </div>
 
+  <!-- Top 3 -->
   <div class="top3-card">
     <div class="top3-header">
       <h3>🏆 Top 3 貼文</h3>
@@ -235,6 +236,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
     <div class="top3-list" id="top3List"><div class="empty-state"><div class="empty-icon">🏆</div><p>載入中…</p></div></div>
   </div>
 
+  <!-- 貼文列表 -->
   <div class="posts-section">
     <div class="posts-header">
       <h3>📝 貼文列表 <span class="posts-count" id="postsCountLabel"></span></h3>
@@ -243,6 +245,23 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
     <div id="postList"><div class="empty-state"><div class="empty-icon">📋</div><p>載入中…</p></div></div>
     <div class="pagination" id="pagination"></div>
   </div>
+
+  <!-- ── 問題反映 ── -->
+  <div class="feedback-card">
+    <h3>🐛 問題反映</h3>
+    <p class="feedback-desc">遇到問題或數據異常？填寫後會自動記錄到 Google Sheets，方便追蹤處理。</p>
+    <textarea
+      class="feedback-textarea"
+      id="feedbackText"
+      placeholder="請描述你遇到的問題，例如：某帳號數據顯示異常、功能無法使用、數字跑掉了…"
+      oninput="updateCharCount('feedbackText','feedbackCharCount',500)"
+    ></textarea>
+    <div class="feedback-footer">
+      <span style="font-size:.72rem;color:var(--muted)" id="feedbackCharCount">0 / 500</span>
+      <button class="btn btn-primary btn-sm" id="feedbackBtn" onclick="submitFeedbackForm()">📨 送出回報</button>
+    </div>
+  </div>
+
 </main>
 </div>
 
@@ -286,188 +305,154 @@ const API_URL = 'https://script.google.com/macros/s/AKfycbxPlR35xGECq045weQwsu0c
 
 // ── 狀態 ──
 const STATE = {
-  allPosts:[], filteredPosts:[], currentPage:1, pageSize:30,
-  accounts:[], topics:[], regions:[],
-  replyTargetId:null, replyTargetAccount:null,
+  allPosts:[],filteredPosts:[],currentPage:1,pageSize:30,
+  accounts:[],topics:[],regions:[],
+  replyTargetId:null,replyTargetAccount:null,
   charts:{trend:null,topic:null}
 };
 
 // ── API ──
-async function apiGet(action, params={}) {
-  Object.keys(params).forEach(k => (params[k]===undefined||params[k]==='') && delete params[k]);
-  const url = `${API_URL}?${new URLSearchParams({action,...params})}`;
-  try {
-    const json = await fetch(url,{redirect:'follow'}).then(r=>r.json());
-    if (!json.success) throw new Error(json.message||'未知錯誤');
-    return json.data;
-  } catch(e) { console.error('apiGet',action,e); throw e; }
+async function apiGet(action,params={}){
+  Object.keys(params).forEach(k=>(params[k]===undefined||params[k]==='')&&delete params[k]);
+  const url=`${API_URL}?${new URLSearchParams({action,...params})}`;
+  try{const json=await fetch(url,{redirect:'follow'}).then(r=>r.json());if(!json.success)throw new Error(json.message||'未知錯誤');return json.data;}
+  catch(e){console.error('apiGet',action,e);throw e;}
 }
-async function apiPost(action, data) {
-  try {
-    return await fetch(API_URL,{method:'POST',body:JSON.stringify({action,data}),headers:{'Content-Type':'application/json'},redirect:'follow'}).then(r=>r.json());
-  } catch(e) { console.error('apiPost',e); throw e; }
+async function apiPost(action,data){
+  try{return await fetch(API_URL,{method:'POST',body:JSON.stringify({action,data}),headers:{'Content-Type':'application/json'},redirect:'follow'}).then(r=>r.json());}
+  catch(e){console.error('apiPost',e);throw e;}
 }
 
 // ── 初始化 ──
-window.addEventListener('load', async ()=>{
+window.addEventListener('load',async()=>{
   showLoading('初始化儀表板…');
-  try {
+  try{
     await loadFilterOptions();
-    await Promise.all([loadDashboardData(), loadStats(), loadTrendChart(), loadTopicChart(), loadTop3()]);
-  } catch(e){ toast('error','❌ 載入失敗：'+e.message); }
-  finally { hideLoading(); }
+    await Promise.all([loadDashboardData(),loadStats(),loadTrendChart(),loadTopicChart(),loadTop3()]);
+  }catch(e){toast('error','❌ 載入失敗：'+e.message);}
+  finally{hideLoading();}
 });
 
-async function refreshData() {
+async function refreshData(){
   showLoading('更新資料…');
-  try {
-    await Promise.all([loadDashboardData(), loadTrendChart(), loadTopicChart(), loadTop3()]);
-    loadStatsFromPosts(); // 用篩選後的貼文更新統計
+  try{
+    await Promise.all([loadDashboardData(),loadTrendChart(),loadTopicChart(),loadTop3()]);
+    loadStatsFromPosts();
     toast('success','✅ 資料已更新！');
-  } catch(e){ toast('error','❌ 更新失敗：'+e.message); }
-  finally { hideLoading(); }
+  }catch(e){toast('error','❌ 更新失敗：'+e.message);}
+  finally{hideLoading();}
 }
 
 // ── 資料載入 ──
-async function loadFilterOptions() {
-  try {
-    const opts = await apiGet('getFilterOptions');
-    if (!opts) return;
-    STATE.accounts = opts.accounts||[]; STATE.topics = opts.topics||[]; STATE.regions = opts.regions||[];
-    populateSelect('filterAccount', STATE.accounts, '📋 所有帳號');
-    populateSelect('filterTopic',   STATE.topics,   '🏷️ 所有主題');
-    populateSelect('filterRegion',  STATE.regions,  '🌏 所有地區');
-    populateSelect('postAccount',   STATE.accounts, '請選擇帳號…');
-    populateSelect('replyAccount',  STATE.accounts, '請選擇帳號…');
-  } catch(e){ console.warn('loadFilterOptions:',e); }
+async function loadFilterOptions(){
+  try{
+    const opts=await apiGet('getFilterOptions');if(!opts)return;
+    STATE.accounts=opts.accounts||[];STATE.topics=opts.topics||[];STATE.regions=opts.regions||[];
+    populateSelect('filterAccount',STATE.accounts,'📋 所有帳號');
+    populateSelect('filterTopic',STATE.topics,'🏷️ 所有主題');
+    populateSelect('filterRegion',STATE.regions,'🌏 所有地區');
+    populateSelect('postAccount',STATE.accounts,'請選擇帳號…');
+    populateSelect('replyAccount',STATE.accounts,'請選擇帳號…');
+  }catch(e){console.warn('loadFilterOptions:',e);}
 }
 
-async function loadDashboardData() {
-  const f = getActiveFilters();
-  try {
-    const result = await apiGet('getDashboardData', f);
-    STATE.allPosts = result ? (result.posts||result||[]) : [];
+async function loadDashboardData(){
+  const f=getActiveFilters();
+  try{
+    const result=await apiGet('getDashboardData',f);
+    STATE.allPosts=result?(result.posts||result||[]):[];
     applyLocalFilter();
-    if (result?.lastUpdate)
-      document.getElementById('lastUpdateTime').textContent =
-        '更新 '+new Date(result.lastUpdate).toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'});
-  } catch(e){
-    STATE.allPosts=[]; renderPostList([]);
-    toast('error','⚠️ 載入貼文失敗：'+e.message);
-  }
+    if(result?.lastUpdate)
+      document.getElementById('lastUpdateTime').textContent='更新 '+new Date(result.lastUpdate).toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'});
+  }catch(e){STATE.allPosts=[];renderPostList([]);toast('error','⚠️ 載入貼文失敗：'+e.message);}
 }
 
-// 全域統計（無篩選時用）
-async function loadStats() {
-  try {
-    const s = await apiGet('getStats');
-    if (s) updateStatCards(s.totalPosts,s.totalViews,s.avgViews,s.avgLikes,s.totalLikes,s.totalReplies);
-  } catch(e){ console.warn('loadStats:',e); }
+async function loadStats(){
+  try{const s=await apiGet('getStats');if(s)updateStatCards(s.totalPosts,s.totalViews,s.avgViews,s.avgLikes,s.totalLikes,s.totalReplies);}
+  catch(e){console.warn('loadStats:',e);}
 }
 
-// ★ 從篩選後的貼文直接計算統計（篩選時用）
-function loadStatsFromPosts() {
-  const posts = STATE.filteredPosts;
-  const n = posts.length;
-  const tv = posts.reduce((s,p)=>s+p.views,0);
-  const tl = posts.reduce((s,p)=>s+p.likes,0);
-  const tr = posts.reduce((s,p)=>s+p.replies,0);
-  updateStatCards(n, tv, n?Math.round(tv/n):0, n?Math.round(tl/n):0, tl, tr);
+function loadStatsFromPosts(){
+  const posts=STATE.filteredPosts,n=posts.length;
+  const tv=posts.reduce((s,p)=>s+p.views,0),tl=posts.reduce((s,p)=>s+p.likes,0),tr=posts.reduce((s,p)=>s+p.replies,0);
+  updateStatCards(n,tv,n?Math.round(tv/n):0,n?Math.round(tl/n):0,tl,tr);
 }
 
-function updateStatCards(totalPosts,totalViews,avgViews,avgLikes,totalLikes,totalReplies) {
-  document.getElementById('statPosts').textContent    = fmtNum(totalPosts);
-  document.getElementById('statViews').textContent    = fmtNum(totalViews);
-  document.getElementById('statAvgViews').textContent = fmtNum(avgViews);
-  document.getElementById('statAvgLikes').textContent = fmtNum(avgLikes);
-  document.getElementById('statViewsSub').textContent = `總愛心 ${fmtNum(totalLikes)}`;
-  document.getElementById('statLikesSub').textContent = `總留言 ${fmtNum(totalReplies)}`;
+function updateStatCards(totalPosts,totalViews,avgViews,avgLikes,totalLikes,totalReplies){
+  document.getElementById('statPosts').textContent=fmtNum(totalPosts);
+  document.getElementById('statViews').textContent=fmtNum(totalViews);
+  document.getElementById('statAvgViews').textContent=fmtNum(avgViews);
+  document.getElementById('statAvgLikes').textContent=fmtNum(avgLikes);
+  document.getElementById('statViewsSub').textContent=`總愛心 ${fmtNum(totalLikes)}`;
+  document.getElementById('statLikesSub').textContent=`總留言 ${fmtNum(totalReplies)}`;
 }
 
-async function loadTrendChart() {
-  try {
-    const acc = document.getElementById('filterAccount').value;
-    const params = {days:30}; if(acc) params.account=acc;
-    const d = await apiGet('getTrend', params);
-    if (d) renderTrendChart(d.dates||[],d.counts||[],d.views||[]);
-  } catch(e){ console.warn('loadTrendChart:',e); }
+async function loadTrendChart(){
+  try{
+    const acc=document.getElementById('filterAccount').value;
+    const params={days:30};if(acc)params.account=acc;
+    const d=await apiGet('getTrend',params);if(d)renderTrendChart(d.dates||[],d.counts||[],d.views||[]);
+  }catch(e){console.warn('loadTrendChart:',e);}
 }
 
-async function loadTopicChart() {
-  try {
-    const acc   = document.getElementById('filterAccount').value;
-    const month = document.getElementById('filterMonth').value;
+async function loadTopicChart(){
+  try{
+    const acc=document.getElementById('filterAccount').value,month=document.getElementById('filterMonth').value;
     const params={};if(acc)params.account=acc;if(month)params.month=month;
-    const d = await apiGet('getTopicDist', params);
-    if (d) renderTopicChart(d.labels||[],d.data||[],d.colors||[]);
-  } catch(e){ console.warn('loadTopicChart:',e); }
+    const d=await apiGet('getTopicDist',params);if(d)renderTopicChart(d.labels||[],d.data||[],d.colors||[]);
+  }catch(e){console.warn('loadTopicChart:',e);}
 }
 
-async function loadTop3() {
-  try {
-    const metric = document.getElementById('top3Metric').value;
-    const month  = document.getElementById('top3Month').value;
-    const acc    = document.getElementById('filterAccount').value;
-    const params = {metric}; if(month)params.month=month; if(acc)params.account=acc;
-    const d = await apiGet('getTop3', params);
+async function loadTop3(){
+  try{
+    const metric=document.getElementById('top3Metric').value,month=document.getElementById('top3Month').value,acc=document.getElementById('filterAccount').value;
+    const params={metric};if(month)params.month=month;if(acc)params.account=acc;
+    const d=await apiGet('getTop3',params);
     renderTop3((d&&d.top3)?d.top3:(Array.isArray(d)?d:[]));
-  } catch(e){ console.warn('loadTop3:',e); }
+  }catch(e){console.warn('loadTop3:',e);}
 }
 
-// ── ★ 篩選邏輯（核心修正）──
-function getActiveFilters() {
+// ── 篩選 ──
+function getActiveFilters(){
   const f={};
-  const acc=document.getElementById('filterAccount').value;
-  const topic=document.getElementById('filterTopic').value;
-  const region=document.getElementById('filterRegion').value;
-  const month=document.getElementById('filterMonth').value;
-  const kw=document.getElementById('filterKeyword').value.trim();
-  if(acc)   f.account=acc;
-  if(topic) f.topic=topic;
-  if(region)f.region=region;
-  if(month) f.month=month;
-  if(kw)    f.keyword=kw;
+  const acc=document.getElementById('filterAccount').value,topic=document.getElementById('filterTopic').value,
+    region=document.getElementById('filterRegion').value,month=document.getElementById('filterMonth').value,
+    kw=document.getElementById('filterKeyword').value.trim();
+  if(acc)f.account=acc;if(topic)f.topic=topic;if(region)f.region=region;if(month)f.month=month;if(kw)f.keyword=kw;
   return f;
 }
 
 let _dt=null;
-function debounceFilter(){ clearTimeout(_dt); _dt=setTimeout(applyFilters,350); }
+function debounceFilter(){clearTimeout(_dt);_dt=setTimeout(applyFilters,350);}
 
-// ★ 修正版 applyFilters：同步更新所有區塊
-async function applyFilters() {
+async function applyFilters(){
   showLoading('篩選中…');
-  try {
-    await loadDashboardData();       // 1. 重抓貼文（帶篩選）
-    loadStatsFromPosts();            // 2. 統計卡片從篩選結果計算
-    await Promise.all([loadTrendChart(), loadTopicChart(), loadTop3()]); // 3. 圖表更新
-    updateFilterBadge();             // 4. badge 提示
-  } catch(e){ toast('error','篩選失敗：'+e.message); }
-  finally{ hideLoading(); }
+  try{
+    await loadDashboardData();
+    loadStatsFromPosts();
+    await Promise.all([loadTrendChart(),loadTopicChart(),loadTop3()]);
+    updateFilterBadge();
+  }catch(e){toast('error','篩選失敗：'+e.message);}
+  finally{hideLoading();}
 }
 
-function applyLocalFilter() {
-  const acc  = document.getElementById('filterAccount').value;
-  const topic= document.getElementById('filterTopic').value;
-  const reg  = document.getElementById('filterRegion').value;
-  const mon  = document.getElementById('filterMonth').value;
-  const kw   = document.getElementById('filterKeyword').value.toLowerCase().trim();
-  STATE.filteredPosts = STATE.allPosts.filter(p=>{
-    if(acc   && p.account!==acc)   return false;
-    if(topic && p.topic  !==topic) return false;
-    if(reg   && p.region !==reg)   return false;
-    if(mon){ const m=new Date(p.timestamp).getMonth()+1; if(m!==parseInt(mon))return false; }
-    if(kw && !p.content.toLowerCase().includes(kw)) return false;
+function applyLocalFilter(){
+  const acc=document.getElementById('filterAccount').value,topic=document.getElementById('filterTopic').value,
+    reg=document.getElementById('filterRegion').value,mon=document.getElementById('filterMonth').value,
+    kw=document.getElementById('filterKeyword').value.toLowerCase().trim();
+  STATE.filteredPosts=STATE.allPosts.filter(p=>{
+    if(acc&&p.account!==acc)return false;if(topic&&p.topic!==topic)return false;
+    if(reg&&p.region!==reg)return false;
+    if(mon){const m=new Date(p.timestamp).getMonth()+1;if(m!==parseInt(mon))return false;}
+    if(kw&&!p.content.toLowerCase().includes(kw))return false;
     return true;
   });
-  STATE.currentPage=1;
-  renderPostList(STATE.filteredPosts);
-  updatePagination();
+  STATE.currentPage=1;renderPostList(STATE.filteredPosts);updatePagination();
 }
 
 function updateFilterBadge(){
-  const count = Object.keys(getActiveFilters()).length;
-  document.getElementById('filterBadge').innerHTML =
-    count>0 ? `<span class="filter-badge">篩選中 ${count} 項</span>` : '';
+  const count=Object.keys(getActiveFilters()).length;
+  document.getElementById('filterBadge').innerHTML=count>0?`<span class="filter-badge">篩選中 ${count} 項</span>`:'';
 }
 
 function clearFilters(){
@@ -481,15 +466,14 @@ function clearFilters(){
 function renderPostList(posts){
   const container=document.getElementById('postList');
   document.getElementById('postsCountLabel').textContent=`（${posts.length} 篇）`;
-  const start=(STATE.currentPage-1)*STATE.pageSize;
-  const paged=posts.slice(start,start+STATE.pageSize);
-  if(!paged.length){ container.innerHTML=`<div class="empty-state"><div class="empty-icon">🔍</div><p>沒有符合條件的貼文</p></div>`; return; }
+  const start=(STATE.currentPage-1)*STATE.pageSize,paged=posts.slice(start,start+STATE.pageSize);
+  if(!paged.length){container.innerHTML=`<div class="empty-state"><div class="empty-icon">🔍</div><p>沒有符合條件的貼文</p></div>`;return;}
   container.innerHTML=paged.map(p=>`
     <div class="post-card" onclick="openDetailModal('${p.postId}')">
       <div class="post-meta">
         <span class="tag tag-account">${esc(p.account)}</span>
-        ${p.topic  ?`<span class="tag tag-topic">${esc(p.topic)}</span>`:''}
-        ${p.region ?`<span class="tag tag-region">${esc(p.region)}</span>`:''}
+        ${p.topic?`<span class="tag tag-topic">${esc(p.topic)}</span>`:''}
+        ${p.region?`<span class="tag tag-region">${esc(p.region)}</span>`:''}
         <span class="tag-date">${fmtDate(p.timestamp)}</span>
       </div>
       <div class="post-content">${esc(p.content)||'<em style="color:var(--muted)">（無內容）</em>'}</div>
@@ -526,7 +510,7 @@ function getPageRange(cur,total){
   return range;
 }
 
-function goPage(p){ STATE.currentPage=p; renderPostList(STATE.filteredPosts); document.querySelector('.posts-section').scrollIntoView({behavior:'smooth',block:'start'}); }
+function goPage(p){STATE.currentPage=p;renderPostList(STATE.filteredPosts);document.querySelector('.posts-section').scrollIntoView({behavior:'smooth',block:'start'});}
 
 function renderTop3(top3){
   const el=document.getElementById('top3List');
@@ -571,8 +555,7 @@ function renderTopicChart(labels,data,colors){
 
 // ── 詳情 Modal ──
 function openDetailModal(postId){
-  const p=STATE.allPosts.find(x=>x.postId===String(postId));
-  if(!p)return;
+  const p=STATE.allPosts.find(x=>x.postId===String(postId));if(!p)return;
   const eng=p.views>0?(((p.likes+p.replies+p.reposts)/p.views)*100).toFixed(2):'0.00';
   document.getElementById('detailBody').innerHTML=`
     <div class="detail-metrics">
@@ -584,7 +567,7 @@ function openDetailModal(postId){
     </div>
     <div class="detail-field"><div class="detail-label">帳號</div><div class="detail-value">${esc(p.account)}</div></div>
     <div class="detail-field"><div class="detail-label">發文時間</div><div class="detail-value">${fmtDateFull(p.timestamp)}</div></div>
-    ${p.topic ?`<div class="detail-field"><div class="detail-label">主題</div><div class="detail-value">${esc(p.topic)}</div></div>`:''}
+    ${p.topic?`<div class="detail-field"><div class="detail-label">主題</div><div class="detail-value">${esc(p.topic)}</div></div>`:''}
     ${p.region?`<div class="detail-field"><div class="detail-label">地區</div><div class="detail-value">${esc(p.region)}</div></div>`:''}
     <div class="detail-field"><div class="detail-label">貼文內容</div><div class="detail-value" style="white-space:pre-wrap">${esc(p.content)}</div></div>
     ${p.permalink?`<div class="detail-field"><div class="detail-label">Threads 連結</div><div class="detail-value"><a href="${p.permalink}" target="_blank" rel="noopener">${p.permalink} ↗</a></div></div>`:''}
@@ -598,28 +581,19 @@ function openDetailModal(postId){
 }
 
 // ── 發文 / 回文 ──
-function openPostModal(){
-  document.getElementById('postContent').value='';
-  document.getElementById('postImageUrl').value='';
-  document.getElementById('postCharCount').textContent='0 / 500';
-  openModal('postModal');
-}
+function openPostModal(){document.getElementById('postContent').value='';document.getElementById('postImageUrl').value='';document.getElementById('postCharCount').textContent='0 / 500';openModal('postModal');}
 async function submitPost(){
-  const account=document.getElementById('postAccount').value;
-  const content=document.getElementById('postContent').value.trim();
-  const imageUrl=document.getElementById('postImageUrl').value.trim();
-  if(!account){toast('error','請選擇帳號');return;}
-  if(!content){toast('error','請輸入貼文內容');return;}
+  const account=document.getElementById('postAccount').value,content=document.getElementById('postContent').value.trim(),imageUrl=document.getElementById('postImageUrl').value.trim();
+  if(!account){toast('error','請選擇帳號');return;}if(!content){toast('error','請輸入貼文內容');return;}
   showLoading('發布貼文中…');
   try{
     const r=await apiPost('createPost',{account,content,imageUrl:imageUrl||null});
     if(r&&r.success){toast('success','✅ 貼文已發布！');closeModal('postModal');setTimeout(refreshData,2000);}
     else toast('error','❌ 發布失敗：'+(r?.data?.message||r?.message||'未知'));
-  }catch(e){toast('error','❌ 發布失敗：'+e.message);}
-  finally{hideLoading();}
+  }catch(e){toast('error','❌ 發布失敗：'+e.message);}finally{hideLoading();}
 }
 function openReplyModal(postId,account,preview){
-  STATE.replyTargetId=postId; STATE.replyTargetAccount=account;
+  STATE.replyTargetId=postId;STATE.replyTargetAccount=account;
   document.getElementById('replyTargetContent').textContent=preview+'…';
   document.getElementById('replyAccount').value=account||'';
   document.getElementById('replyContent').value='';
@@ -627,19 +601,33 @@ function openReplyModal(postId,account,preview){
   openModal('replyModal');
 }
 async function submitReply(){
-  const account=document.getElementById('replyAccount').value;
-  const content=document.getElementById('replyContent').value.trim();
-  const postId=STATE.replyTargetId;
-  if(!account){toast('error','請選擇帳號');return;}
-  if(!postId){toast('error','缺少目標貼文 ID');return;}
-  if(!content){toast('error','請輸入回文內容');return;}
+  const account=document.getElementById('replyAccount').value,content=document.getElementById('replyContent').value.trim(),postId=STATE.replyTargetId;
+  if(!account){toast('error','請選擇帳號');return;}if(!postId){toast('error','缺少目標貼文 ID');return;}if(!content){toast('error','請輸入回文內容');return;}
   showLoading('發布回文中…');
   try{
     const r=await apiPost('createReply',{account,postId,content});
     if(r&&r.success){toast('success','✅ 回文已發布！');closeModal('replyModal');}
     else toast('error','❌ 回文失敗：'+(r?.data?.message||r?.message||'未知'));
-  }catch(e){toast('error','❌ 回文失敗：'+e.message);}
-  finally{hideLoading();}
+  }catch(e){toast('error','❌ 回文失敗：'+e.message);}finally{hideLoading();}
+}
+
+// ── 問題反映 ──
+async function submitFeedbackForm(){
+  const desc=document.getElementById('feedbackText').value.trim();
+  if(!desc){toast('error','請填寫問題描述');return;}
+  const btn=document.getElementById('feedbackBtn');
+  btn.disabled=true;btn.textContent='送出中…';
+  try{
+    const r=await apiPost('submitFeedback',{description:desc});
+    if(r&&r.success){
+      toast('success','✅ '+(r.data?.message||r.message||'問題已回報，謝謝！'));
+      document.getElementById('feedbackText').value='';
+      document.getElementById('feedbackCharCount').textContent='0 / 500';
+    }else{
+      toast('error','❌ 送出失敗：'+(r?.data?.message||r?.message||'未知錯誤'));
+    }
+  }catch(e){toast('error','❌ 送出失敗：'+e.message);}
+  finally{btn.disabled=false;btn.textContent='📨 送出回報';}
 }
 
 // ── UI 工具 ──
@@ -650,15 +638,12 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelect
 function showLoading(msg){document.getElementById('loadingText').textContent=msg||'載入中…';document.getElementById('loadingOverlay').classList.add('show');}
 function hideLoading(){document.getElementById('loadingOverlay').classList.remove('show');}
 function toast(type,msg){
-  const c=document.getElementById('toastContainer');
-  const el=document.createElement('div');
-  el.className=`toast ${type}`;
-  el.innerHTML=`<span class="toast-icon">${type==='success'?'✅':'❌'}</span><span>${msg}</span>`;
-  c.appendChild(el); setTimeout(()=>el.remove(),3500);
+  const c=document.getElementById('toastContainer'),el=document.createElement('div');
+  el.className=`toast ${type}`;el.innerHTML=`<span class="toast-icon">${type==='success'?'✅':'❌'}</span><span>${msg}</span>`;
+  c.appendChild(el);setTimeout(()=>el.remove(),3500);
 }
 function populateSelect(id,items,placeholder){
-  const el=document.getElementById(id); if(!el)return;
-  const cur=el.value;
+  const el=document.getElementById(id);if(!el)return;const cur=el.value;
   el.innerHTML=`<option value="">${placeholder}</option>`+items.map(v=>`<option value="${esc(v)}" ${v===cur?'selected':''}>${esc(v)}</option>`).join('');
 }
 function updateCharCount(tid,cid,max){document.getElementById(cid).textContent=`${document.getElementById(tid).value.length} / ${max}`;}
