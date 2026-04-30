@@ -301,7 +301,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 
 <script>
 // ── 設定 ──
-const API_URL = 'https://script.google.com/macros/s/AKfycbxAZIxFYIVVtJAi-5dlVU6TVLTEPvxx820EVy50LKZjviw4Rtr_wZgPVBfW7ZUmT1Gs/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbwdNuUuKA1HS9JmrWdTGsWqhG1TyU09v43tk25ToXjSx2Jt65rja1fT75lOh7dUa6Do/exec';
 
 // ── 狀態 ──
 const STATE = {
@@ -611,20 +611,20 @@ async function submitReply(){
   }catch(e){toast('error','❌ 回文失敗：'+e.message);}finally{hideLoading();}
 }
 
-// ── 問題反映 ──
+// ── 問題反映（用 GET 避免 CORS）──
 async function submitFeedbackForm(){
   const desc=document.getElementById('feedbackText').value.trim();
   if(!desc){toast('error','請填寫問題描述');return;}
   const btn=document.getElementById('feedbackBtn');
   btn.disabled=true;btn.textContent='送出中…';
   try{
-    const r=await apiPost('submitFeedback',{description:desc});
+    const r=await apiGet('submitFeedback',{description:desc});
     if(r&&r.success){
-      toast('success','✅ '+(r.data?.message||r.message||'問題已回報，謝謝！'));
+      toast('success','✅ '+(r.message||'問題已回報，謝謝！'));
       document.getElementById('feedbackText').value='';
       document.getElementById('feedbackCharCount').textContent='0 / 500';
     }else{
-      toast('error','❌ 送出失敗：'+(r?.data?.message||r?.message||'未知錯誤'));
+      toast('error','❌ 送出失敗：'+(r?.message||'未知錯誤'));
     }
   }catch(e){toast('error','❌ 送出失敗：'+e.message);}
   finally{btn.disabled=false;btn.textContent='📨 送出回報';}
