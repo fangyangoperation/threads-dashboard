@@ -165,6 +165,52 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
   .filter-bar select,.filter-bar input[type=text]{min-width:unset;width:100%}
   .detail-metrics{grid-template-columns:repeat(3,1fr)}
 }
+
+/* ══ 追蹤數專區 ══ */
+.followers-section{background:var(--bg2);border:1px solid var(--border);border-radius:var(--card-r);padding:20px;margin-bottom:24px}
+.followers-section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px}
+.followers-section-header h3{font-size:.9rem;font-weight:600;display:flex;align-items:center;gap:8px}
+.followers-range-btns{display:flex;gap:6px}
+.range-btn{font-size:.75rem;padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--bg3);color:var(--muted);cursor:pointer;transition:all .15s;font-family:var(--font-jp)}
+.range-btn.active,.range-btn:hover{border-color:var(--accent);color:var(--accent2);background:rgba(124,111,255,.1)}
+.followers-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+@media(max-width:700px){.followers-cards{grid-template-columns:1fr}}
+.fol-card{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px 16px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
+.fol-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:3px 0 0 3px}
+.fol-card.acc-usca::before{background:var(--green)}
+.fol-card.acc-ukau::before{background:var(--blue)}
+.fol-card.acc-play::before{background:var(--amber)}
+.fol-card:hover{border-color:var(--accent);transform:translateY(-2px)}
+.fol-card.selected{border-color:var(--accent);background:rgba(124,111,255,.08)}
+.fol-account{font-size:.72rem;color:var(--muted);margin-bottom:4px;padding-left:10px}
+.fol-count{font-family:var(--font-en);font-size:1.7rem;font-weight:800;padding-left:10px;line-height:1.1;margin-bottom:6px}
+.fol-card.acc-usca .fol-count{color:var(--green)}
+.fol-card.acc-ukau .fol-count{color:var(--blue)}
+.fol-card.acc-play .fol-count{color:var(--amber)}
+.fol-delta{font-size:.78rem;padding-left:10px;display:flex;align-items:center;gap:6px}
+.fol-delta .delta-val{font-family:var(--font-en);font-weight:700}
+.fol-delta .delta-label{color:var(--muted);font-size:.7rem}
+.delta-up{color:var(--green)}
+.delta-down{color:var(--red)}
+.delta-zero{color:var(--muted)}
+.fol-chart-wrap{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:16px}
+.fol-chart-wrap canvas{max-height:200px}
+/* 展開詳情表格 */
+.fol-detail-panel{display:none;margin-top:12px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.fol-detail-panel.open{display:block}
+.fol-detail-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border)}
+.fol-detail-header span{font-size:.82rem;font-weight:600}
+.fol-detail-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;padding:2px 6px;transition:color .15s}
+.fol-detail-close:hover{color:var(--text)}
+.fol-detail-table{width:100%;border-collapse:collapse;font-size:.82rem}
+.fol-detail-table th{padding:8px 14px;text-align:left;color:var(--muted);font-size:.72rem;font-weight:500;letter-spacing:.04em;border-bottom:1px solid var(--border);background:rgba(255,255,255,.02)}
+.fol-detail-table td{padding:9px 14px;border-bottom:1px solid rgba(37,40,53,.6);color:var(--text)}
+.fol-detail-table tr:last-child td{border-bottom:none}
+.fol-detail-table td.td-num{font-family:var(--font-en);font-weight:600}
+.fol-detail-table td.td-up{color:var(--green);font-family:var(--font-en);font-weight:700}
+.fol-detail-table td.td-down{color:var(--red);font-family:var(--font-en);font-weight:700}
+.fol-detail-table td.td-muted{color:var(--muted)}
+.fol-loading{text-align:center;padding:32px;color:var(--muted);font-size:.85rem}
 </style>
 </head>
 <body>
@@ -207,6 +253,44 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
     <div class="stat-card green"> <div class="stat-icon">👁️</div><div class="stat-label">總瀏覽數</div><div class="stat-value" id="statViews">–</div><div class="stat-sub" id="statViewsSub">累計觸及</div></div>
     <div class="stat-card blue">  <div class="stat-icon">📊</div><div class="stat-label">平均瀏覽 / 篇</div><div class="stat-value" id="statAvgViews">–</div><div class="stat-sub">每篇平均</div></div>
     <div class="stat-card amber"> <div class="stat-icon">❤️</div><div class="stat-label">平均愛心 / 篇</div><div class="stat-value" id="statAvgLikes">–</div><div class="stat-sub" id="statLikesSub">互動指標</div></div>
+  </div>
+
+  <!-- ══ 追蹤數專區 ══ -->
+  <div class="followers-section">
+    <div class="followers-section-header">
+      <h3>📈 追蹤數總覽</h3>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <div class="followers-range-btns">
+          <button class="range-btn active" onclick="setFollowersRange(3,this)">近 3 個月</button>
+          <button class="range-btn" onclick="setFollowersRange(6,this)">近 6 個月</button>
+          <button class="range-btn" onclick="setFollowersRange(12,this)">全年</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 三帳號卡片 -->
+    <div class="followers-cards" id="followersCards">
+      <div class="fol-loading">載入追蹤數資料中…</div>
+    </div>
+
+    <!-- 展開詳情表格（點擊帳號卡片後出現） -->
+    <div class="fol-detail-panel" id="folDetailPanel">
+      <div class="fol-detail-header">
+        <span id="folDetailTitle">–</span>
+        <button class="fol-detail-close" onclick="closeFolDetail()">✕</button>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="fol-detail-table" id="folDetailTable">
+          <thead><tr><th>月份</th><th>追蹤數</th><th>月增減</th><th>成長率</th></tr></thead>
+          <tbody id="folDetailBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 趨勢折線圖 -->
+    <div class="fol-chart-wrap">
+      <canvas id="followersChart"></canvas>
+    </div>
   </div>
 
   <!-- 圖表 -->
@@ -308,7 +392,10 @@ const STATE = {
   allPosts:[],filteredPosts:[],currentPage:1,pageSize:30,
   accounts:[],topics:[],regions:[],
   replyTargetId:null,replyTargetAccount:null,
-  charts:{trend:null,topic:null}
+  charts:{trend:null,topic:null,followers:null},
+  followersData:null,   // 原始追蹤數歷史資料
+  followersRange:3,     // 顯示月數
+  selectedAccount:null  // 目前展開明細的帳號
 };
 
 // ── API ──
@@ -328,7 +415,7 @@ window.addEventListener('load',async()=>{
   showLoading('初始化儀表板…');
   try{
     await loadFilterOptions();
-    await Promise.all([loadDashboardData(),loadStats(),loadTrendChart(),loadTopicChart(),loadTop3()]);
+    await Promise.all([loadDashboardData(),loadStats(),loadTrendChart(),loadTopicChart(),loadTop3(),loadFollowersData()]);
   }catch(e){toast('error','❌ 載入失敗：'+e.message);}
   finally{hideLoading();}
 });
@@ -628,6 +715,195 @@ async function submitFeedbackForm(){
     }
   }catch(e){toast('error','❌ 送出失敗：'+e.message);}
   finally{btn.disabled=false;btn.textContent='📨 送出回報';}
+}
+
+// ── 追蹤數專區 ──────────────────────────────────────────────
+
+// 帳號設定（對應 CSS class 和顯示名稱）
+const FOL_ACCOUNTS = [
+  { key:'usca', label:'美加', cssClass:'acc-usca', color:'#34d399', account:'tkbletsgo.usca' },
+  { key:'ukau', label:'英澳', cssClass:'acc-ukau', color:'#60a5fa', account:'tkbletsgo.ukau' },
+  { key:'play', label:'遊學', cssClass:'acc-play', color:'#fbbf24', account:'tkbletsplay_'   },
+];
+
+async function loadFollowersData(){
+  try{
+    const d = await apiGet('getFollowersData');
+    STATE.followersData = d;
+    renderFollowersSection();
+  }catch(e){
+    console.warn('loadFollowersData:', e);
+    document.getElementById('followersCards').innerHTML=
+      `<div class="fol-loading" style="color:var(--red)">⚠️ 追蹤數資料載入失敗（請確認 GAS 已更新至 v11）</div>`;
+  }
+}
+
+function setFollowersRange(months, btn){
+  STATE.followersRange = months;
+  document.querySelectorAll('.range-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderFollowersSection();
+}
+
+function renderFollowersSection(){
+  if(!STATE.followersData) return;
+  const d = STATE.followersData;
+  renderFollowersCards(d);
+  renderFollowersChart(d);
+}
+
+function renderFollowersCards(d){
+  const cardsEl = document.getElementById('followersCards');
+  const now = new Date();
+  const curMonth = now.getMonth()+1;
+
+  cardsEl.innerHTML = FOL_ACCOUNTS.map(acc=>{
+    const history = (d[acc.account] || d[acc.key] || d[acc.label] || []);
+    // 找當月和上月的追蹤數
+    const cur  = getMonthFollowers(history, curMonth);
+    const prev = getMonthFollowers(history, curMonth-1);
+    const delta = (cur > 0 && prev > 0) ? cur - prev : null;
+    const pct   = delta!==null && prev>0 ? ((delta/prev)*100).toFixed(1) : null;
+
+    let deltaHtml = '';
+    if(delta !== null){
+      const cls  = delta>0?'delta-up':delta<0?'delta-down':'delta-zero';
+      const sign = delta>0?'+':'';
+      deltaHtml = `<span class="delta-val ${cls}">${sign}${fmtNum(delta)}</span>
+                   <span class="delta-label">本月增減${pct?` (${pct}%)`:''}</span>`;
+    } else {
+      deltaHtml = `<span class="delta-label">尚無上月資料</span>`;
+    }
+
+    return `<div class="fol-card ${acc.cssClass}" onclick="toggleFolDetail('${acc.key}')">
+      <div class="fol-account">${acc.label} · ${acc.account}</div>
+      <div class="fol-count">${cur>0?fmtNum(cur):'–'}</div>
+      <div class="fol-delta">${deltaHtml}</div>
+    </div>`;
+  }).join('');
+}
+
+function getMonthFollowers(history, month){
+  // history: [{month:4, followers:12450, date:'2026-04-30'}, ...]
+  if(!Array.isArray(history)) return 0;
+  const found = history.filter(r=>r.month===month);
+  if(!found.length) return 0;
+  // 取同月份最後一筆（日期最大）
+  found.sort((a,b)=> (b.date||'').localeCompare(a.date||''));
+  return found[0].followers || 0;
+}
+
+function toggleFolDetail(key){
+  const panel = document.getElementById('folDetailPanel');
+  if(STATE.selectedAccount === key && panel.classList.contains('open')){
+    closeFolDetail(); return;
+  }
+  STATE.selectedAccount = key;
+  const acc = FOL_ACCOUNTS.find(a=>a.key===key);
+  if(!acc) return;
+
+  document.getElementById('folDetailTitle').textContent = `${acc.label} 帳號（${acc.account}）月度追蹤數明細`;
+
+  const d = STATE.followersData;
+  const history = (d[acc.account] || d[acc.key] || d[acc.label] || []);
+
+  // 建月份 → 追蹤數 map
+  const monthMap = {};
+  history.forEach(r=>{ if(r.month && r.followers){ monthMap[r.month] = r.followers; } });
+
+  const now = new Date();
+  const curMonth = now.getMonth()+1;
+
+  const rows = [];
+  for(let m=1; m<=curMonth; m++){
+    const cur  = monthMap[m]  || 0;
+    const prev = monthMap[m-1]|| 0;
+    if(!cur) continue;
+    const delta = prev>0 ? cur-prev : null;
+    const pct   = delta!==null && prev>0 ? ((delta/prev)*100).toFixed(1)+'%' : '–';
+    rows.push({m, cur, delta, pct});
+  }
+
+  document.getElementById('folDetailBody').innerHTML = rows.reverse().map(r=>{
+    let dCls='td-muted', dVal='–';
+    if(r.delta!==null){
+      dCls  = r.delta>0?'td-up':r.delta<0?'td-down':'td-muted';
+      dVal  = (r.delta>0?'+':'')+r.delta.toLocaleString('zh-TW');
+    }
+    return `<tr>
+      <td>${r.m} 月</td>
+      <td class="td-num">${r.cur.toLocaleString('zh-TW')}</td>
+      <td class="${dCls}">${dVal}</td>
+      <td class="${r.delta!==null?(r.delta>0?'td-up':r.delta<0?'td-down':'td-muted'):'td-muted'}">${r.pct}</td>
+    </tr>`;
+  }).join('');
+
+  panel.classList.add('open');
+  // 高亮選中的卡片
+  document.querySelectorAll('.fol-card').forEach(el=>el.classList.remove('selected'));
+  document.querySelectorAll('.fol-card')[FOL_ACCOUNTS.findIndex(a=>a.key===key)]?.classList.add('selected');
+}
+
+function closeFolDetail(){
+  STATE.selectedAccount = null;
+  document.getElementById('folDetailPanel').classList.remove('open');
+  document.querySelectorAll('.fol-card').forEach(el=>el.classList.remove('selected'));
+}
+
+function renderFollowersChart(d){
+  const ctx = document.getElementById('followersChart').getContext('2d');
+  if(STATE.charts.followers) STATE.charts.followers.destroy();
+
+  const now = new Date();
+  const curMonth = now.getMonth()+1;
+  const range = STATE.followersRange;
+  const startMonth = Math.max(1, curMonth-range+1);
+
+  // 月份標籤
+  const labels = [];
+  for(let m=startMonth; m<=curMonth; m++) labels.push(`${m} 月`);
+
+  const datasets = FOL_ACCOUNTS.map(acc=>{
+    const history = (d[acc.account] || d[acc.key] || d[acc.label] || []);
+    const monthMap = {};
+    history.forEach(r=>{ if(r.month && r.followers) monthMap[r.month]=r.followers; });
+
+    const vals = [];
+    for(let m=startMonth; m<=curMonth; m++) vals.push(monthMap[m]||null);
+
+    return {
+      label: acc.label,
+      data: vals,
+      borderColor: acc.color,
+      backgroundColor: acc.color+'22',
+      fill: false,
+      tension: .4,
+      pointRadius: 5,
+      pointBackgroundColor: acc.color,
+      pointHoverRadius: 8,
+      spanGaps: true
+    };
+  });
+
+  STATE.charts.followers = new Chart(ctx,{
+    type:'line',
+    data:{labels, datasets},
+    options:{
+      responsive:true, maintainAspectRatio:true,
+      plugins:{
+        legend:{labels:{color:'#6b7280',font:{size:11},boxWidth:12}},
+        tooltip:{
+          callbacks:{
+            label: ctx=>`${ctx.dataset.label}：${ctx.parsed.y ? ctx.parsed.y.toLocaleString('zh-TW') : '–'} 追蹤`
+          }
+        }
+      },
+      scales:{
+        x:{ticks:{color:'#6b7280',font:{size:11}},grid:{color:'#1c1f2a'}},
+        y:{ticks:{color:'#6b7280',font:{size:10},callback:v=>v>=1000?(v/1000).toFixed(1)+'K':v},grid:{color:'#1c1f2a'}}
+      }
+    }
+  });
 }
 
 // ── UI 工具 ──
